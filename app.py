@@ -19,5 +19,6 @@ def gpt():
     full_response = f"{SYSTEM_PROMPT.strip()}\n\nSoru: {user_prompt}\n\nCevap: Bu soruya göre uygun alt karakter seçilerek yanıt hazırlanabilir."
 
     return jsonify({"response": full_response})
-    if __name__ == '__main__':
+if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000)
+

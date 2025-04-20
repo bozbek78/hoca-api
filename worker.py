@@ -4,7 +4,7 @@ import os
 import time
 
 def run_worker():
-    conn = psycopg2.connect(os.environ['DATABASE_URL'])
+    # conn = psycopg2.connect(os.environ['DATABASE_URL'])
     cur = conn.cursor()
     cur.execute("SELECT id, to_gpt, message FROM message_queue WHERE status = 'pending'")
     messages = cur.fetchall()

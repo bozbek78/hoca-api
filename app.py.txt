@@ -1,0 +1,19 @@
+from flask import Flask, request
+import psycopg2
+import os
+
+app = Flask(__name__)
+
+@app.route('/message', methods=['POST'])
+def message():
+    data = request.json
+    conn = psycopg2.connect(os.environ['DATABASE_URL'])
+    cur = conn.cursor()
+    cur.execute(
+        "INSERT INTO message_queue (from_gpt, to_gpt, message, status) VALUES (%s, %s, %s, 'pending')",
+        (data['from'], data['to'], data['message'])
+    )
+    conn.commit()
+    cur.close()
+    conn.close()
+    return {'status': 'queued'}

@@ -21,4 +21,19 @@ def gpt():
     return jsonify({"response": full_response})
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000)
+@app.route("/message", methods=["POST"])
+def message():
+    data = request.get_json()
+    sender = data.get("from")
+    receiver = data.get("to")
+    message = data.get("message")
+
+    print(f"Mesaj alındı: {sender} → {receiver}: {message}")
+
+    return jsonify({
+        "status": "ok",
+        "from": sender,
+        "to": receiver,
+        "message": message
+    })
 

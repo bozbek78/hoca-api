@@ -2,3 +2,6 @@ flask
 psycopg2-binary
 requests
 gunicorn
+flask
+flask_cors
+gunicorn

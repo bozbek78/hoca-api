@@ -3,6 +3,12 @@ import requests
 
 app = Flask(__name__)
 
+from flask import send_from_directory
+
+@app.route("/privacy-policy")
+def privacy():
+    return send_from_directory(".", "privacy-policy.html")
+
 SYSTEM_PROMPT = """
 Sen HOCA adında bir teknik mentörsün. Alt karakterleri yönetirsin. 
 Gelen soruları analiz eder, gerekiyorsa uygun karaktere yönlendirirsin.

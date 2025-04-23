@@ -1,8 +1,4 @@
-from flask import Flask, send_from_directory, request, jsonify
-from flask_cors import CORS
-
-app = Flask(__name__)
-CORS(app)
+import requests  # Dosyanın en üstüne eklendiğinden emin ol
 
 @app.route('/gpt', methods=['POST'])
 def gpt():
@@ -10,9 +6,23 @@ def gpt():
     user_message = data.get('user_message')
     context = data.get('context')
     history = data.get('history', [])
-    reply = f'Wind GPT cevabı: {user_message} | Bağlam: {context}'
-    return jsonify({'reply': reply})
 
-@app.route('/privacy-policy')
-def privacy():
-    return send_from_directory('.', 'privacy-policy.html')
+    # 1. GROOT veya başka GPT API’ye mesaj gönder
+    gpt_response = requests.post(
+        "https://groot-api.onrender.com/gpt",
+        json={"prompt": user_message}
+    )
+    response_text = gpt_response.json().get("response", "Yanıt alınamadı")
+
+    # 2. Veritabanına kaydet
+    requests.post(
+        "https://hoca-api-db.onrender.com/save-gpt",
+        data={
+            "gpt_id": "GROOT",
+            "user_message": user_message,
+            "gpt_response": response_text
+        }
+    )
+
+    # 3. Yanıtı dön
+    return jsonify({'reply': response_text})

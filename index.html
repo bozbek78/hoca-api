@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <title>🧠 GPT Hafıza Paneli</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+      background: #f7f9fc;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    input, button, select {
+      padding: 0.5rem;
+      margin: 0.5rem 0.5rem 0.5rem 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    #searchInput {
+      width: 40%;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+      background: white;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    th, td {
+      border: 1px solid #e3e3e3;
+      padding: 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f0f0f0;
+    }
+    .time {
+      font-size: 0.85em;
+      color: #666;
+    }
+    .delete-button {
+      background: red;
+      color: white;
+      padding: 5px 10px;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 0.8em;
+    }
+    .export-button {
+      float: right;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧠 GPT Hafıza Paneli</h1>
+  <div>
+    <input type="text" id="searchInput" placeholder="🔍 Kullanıcı mesajlarında ara...">
+    <select id="gptFilter"><option value="">Tüm GPT'ler</option></select>
+    <button class="export-button" onclick="exportToCSV()">📁 CSV Olarak İndir</button>
+  </div>
+  <table id="logsTable">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>GPT</th>
+        <th>Kullanıcı Mesajı</th>
+        <th>GPT Yanıtı</th>
+        <th>Zaman</th>
+        <th>İşlem</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    let fullData = [];
+
+    function renderTable(data) {
+      const tbody = document.querySelector("#logsTable tbody");
+      tbody.innerHTML = "";
+      data.forEach((entry, index) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${entry.gpt_id}</td>
+          <td>${entry.user_message}</td>
+          <td>${entry.gpt_response}</td>
+          <td class="time">${new Date(entry.created_at).toLocaleString()}</td>
+          <td><button class="delete-button" onclick="deleteEntry(${entry.id})">Sil</button></td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function exportToCSV() {
+      let csv = "GPT,Kullanıcı Mesajı,GPT Yanıtı,Zaman\n";
+      fullData.forEach(entry => {
+        const line = [entry.gpt_id, entry.user_message, entry.gpt_response, new Date(entry.created_at).toLocaleString()].join(",");
+        csv += line + "\n";
+      });
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", "gpt_kayitlari.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function deleteEntry(id) {
+      fetch(`https://hoca-api-db.onrender.com/delete-gpt/${id}`, { method: "DELETE" })
+        .then(() => {
+          fullData = fullData.filter(item => item.id !== id);
+          renderTable(fullData);
+        })
+        .catch(err => alert("Silme işlemi başarısız: " + err));
+    }
+
+    fetch("https://hoca-api-db.onrender.com/get-gpt")
+      .then(response => response.json())
+      .then(data => {
+        fullData = data;
+        renderTable(fullData);
+        const uniqueGPTs = [...new Set(fullData.map(e => e.gpt_id))];
+        const select = document.getElementById("gptFilter");
+        uniqueGPTs.forEach(gpt => {
+          const option = document.createElement("option");
+          option.value = gpt;
+          option.text = gpt;
+          select.appendChild(option);
+        });
+      });
+
+    document.getElementById("searchInput").addEventListener("input", filterData);
+    document.getElementById("gptFilter").addEventListener("change", filterData);
+
+    function filterData() {
+      const search = document.getElementById("searchInput").value.toLowerCase();
+      const gpt = document.getElementById("gptFilter").value;
+      const filtered = fullData.filter(entry =>
+        entry.user_message.toLowerCase().includes(search) &&
+        (gpt ? entry.gpt_id === gpt : true)
+      );
+      renderTable(filtered);
+    }
+  </script>
+</body>
+</html>

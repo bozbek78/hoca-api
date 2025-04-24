@@ -1,4 +1,5 @@
-fastapi
-uvicorn
-psycopg2-binary
-python-multipart
+fastapi==0.115.2
+uvicorn==0.24.0
+psycopg2-binary==2.9.10
+python-multipart==0.0.9
+gunicorn==20.1.0

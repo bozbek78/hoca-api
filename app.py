@@ -9,7 +9,7 @@ def gpt():
 
     # 1. GROOT veya başka GPT API’ye mesaj gönder
     gpt_response = requests.post(
-        "https://groot-api.onrender.com/gpt",
+        "https://hoca-api.onrender.com/gpt",
         json={"prompt": user_message}
     )
     response_text = gpt_response.json().get("response", "Yanıt alınamadı")
